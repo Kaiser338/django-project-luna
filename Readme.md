@@ -5,7 +5,7 @@
 
 Ensure you have Docker and Docker Compose installed on your machine. You can follow the official documentation for installation instructions:
 
-[Docker](https://docs.docker.com/engine/install/)
+[Docker](https://docs.docker.com/engine/install/)  
 [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Installation
