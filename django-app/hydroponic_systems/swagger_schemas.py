@@ -12,7 +12,15 @@ hydroponic_system_list_schema = swagger_auto_schema(
         openapi.Parameter('ordering', openapi.IN_QUERY, description="Order by created_at or updated_at", type=openapi.TYPE_STRING)
     ],
     responses={200: HydroponicSystemSerializer(many=True)},
-    security=[{'Bearer': []}]
+    security=[
+       {
+            'Bearer': {
+                'type': 'apiKey',
+                'name': 'Authorization',
+                'in': 'header'
+            }
+        },
+    ]
 )
 
 measurement_list_schema = swagger_auto_schema(
@@ -25,5 +33,13 @@ measurement_list_schema = swagger_auto_schema(
         openapi.Parameter('ordering', openapi.IN_QUERY, description="Order by created_at, pH, water_temperature, or TDS", type=openapi.TYPE_STRING)
     ],
     responses={200: MeasurementSerializer(many=True)},
-    security=[{'Bearer': []}]
+    security=[
+       {
+            'Bearer': {
+                'type': 'apiKey',
+                'name': 'Authorization',
+                'in': 'header'
+            }
+        },
+    ]
 )
