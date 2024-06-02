@@ -20,7 +20,13 @@ class HydroponicSystemViewSet(viewsets.ModelViewSet):
     serializer_class = HydroponicSystemSerializer
     permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['created_at', 'updated_at']
+    filterset_fields = {
+        'name': ['exact', 'icontains'],
+        'label': ['exact', 'icontains'],
+        'description': ['exact', 'icontains'],
+        'created_at': ['exact', 'lt', 'lte', 'gt', 'gte'],
+        'updated_at': ['exact', 'lt', 'lte', 'gt', 'gte']
+    }
     ordering_fields = ['created_at', 'updated_at']
 
     def create(self, request):
@@ -53,8 +59,14 @@ class HydroponicSystemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """
         Get a queryset of hydroponic systems owned by the authenticated user.
+        Apply default ordering if no ordering parameter is provided.
         """
-        return self.queryset.filter(owner=self.request.user)
+        queryset = self.queryset.filter(owner=self.request.user)
+
+        if not self.request.query_params.get('ordering'):
+            queryset = queryset.order_by('-updated_at')
+
+        return queryset
 
     def retrieve(self, request, pk=None):
         """
@@ -112,7 +124,13 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     """
     serializer_class = MeasurementSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
-    filterset_fields = ['system', 'created_at', 'pH', 'water_temperature', 'TDS']
+    filterset_fields = {
+        'system': ['exact'],
+        'created_at': ['exact', 'lt', 'lte', 'gt', 'gte'],
+        'pH': ['exact', 'lt', 'lte', 'gt', 'gte'],
+        'water_temperature': ['exact', 'lt', 'lte', 'gt', 'gte'],
+        'TDS': ['exact', 'lt', 'lte', 'gt', 'gte']
+    }
     ordering_fields = ['created_at', 'pH', 'water_temperature', 'TDS']
     permission_classes = [IsAuthenticated, IsMeasurementOwner]
 
@@ -127,6 +145,9 @@ class MeasurementViewSet(viewsets.ModelViewSet):
         system_id = self.request.query_params.get('system')
         if system_id:
             queryset = queryset.filter(system_id=system_id)
+
+        if not self.request.query_params.get('ordering'):
+            queryset = queryset.order_by('-created_at')
 
         return queryset
 
