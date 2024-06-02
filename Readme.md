@@ -49,3 +49,12 @@ docker-compose exec web python django-app/manage.py migrate
 ```
 docker-compose up
 ```
+
+## Usage
+
+### Api documentation
+
+Swagger api documentation is available at:  
+
+```/api/swagger```  
+```/api/redoc```
