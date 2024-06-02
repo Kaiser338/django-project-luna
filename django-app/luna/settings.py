@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django_filters',
     'hydroponic_systems',
     'rest_framework',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

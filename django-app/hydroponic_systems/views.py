@@ -5,6 +5,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from .models import HydroponicSystem, Measurement
 from .serializers import HydroponicSystemSerializer, MeasurementSerializer
 from .permissions import IsMeasurementOwner
+from .swagger_schemas import hydroponic_system_list_schema, measurement_list_schema
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 class HydroponicSystemViewSet(viewsets.ModelViewSet):
     """
@@ -29,6 +32,11 @@ class HydroponicSystemViewSet(viewsets.ModelViewSet):
     }
     ordering_fields = ['created_at', 'updated_at']
 
+
+    @hydroponic_system_list_schema
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+    
     def create(self, request):
         """
         Create a new hydroponic system owned by the authenticated user.
@@ -54,7 +62,9 @@ class HydroponicSystemViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
+        
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
     def get_queryset(self):
         """
@@ -134,22 +144,9 @@ class MeasurementViewSet(viewsets.ModelViewSet):
     ordering_fields = ['created_at', 'pH', 'water_temperature', 'TDS']
     permission_classes = [IsAuthenticated, IsMeasurementOwner]
 
-    def get_queryset(self):
-        """
-        Get a queryset of measurements associated with hydroponic systems owned by the authenticated user.
-        """
-        user_systems = HydroponicSystem.objects.filter(owner=self.request.user)
-        user_system_ids = user_systems.values_list('id', flat=True)
-        queryset = Measurement.objects.filter(system_id__in=user_system_ids)
-
-        system_id = self.request.query_params.get('system')
-        if system_id:
-            queryset = queryset.filter(system_id=system_id)
-
-        if not self.request.query_params.get('ordering'):
-            queryset = queryset.order_by('-created_at')
-
-        return queryset
+    @measurement_list_schema
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
     def create(self, request, pk=None):
         """
@@ -171,3 +168,16 @@ class MeasurementViewSet(viewsets.ModelViewSet):
             return super().create(request)
         else:
             return Response({"error": "You do not have permission to create measurements for this system."}, status=status.HTTP_403_FORBIDDEN)
+
+    def get_queryset(self):
+        """
+        Get a queryset of measurements associated with hydroponic systems owned by the authenticated user.
+        """
+        user_systems = HydroponicSystem.objects.filter(owner=self.request.user)
+        user_system_ids = user_systems.values_list('id', flat=True)
+        queryset = Measurement.objects.filter(system_id__in=user_system_ids)
+
+        if not self.request.query_params.get('ordering'):
+            queryset = queryset.order_by('-created_at')
+
+        return queryset
