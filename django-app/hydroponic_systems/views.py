@@ -82,6 +82,9 @@ class HydroponicSystemViewSet(viewsets.ModelViewSet):
         """
         Retrieve details of a specific hydroponic system, including the last 10 measurements associated with it.
 
+        Query Parameters:
+        - num_measurements: int (optional)
+
         Response Body:
         {
             "id": 1,
@@ -107,9 +110,15 @@ class HydroponicSystemViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         data = serializer.data
 
-        measurements = instance.measurements.order_by('-created_at')[:10]
+        num_measurements = request.query_params.get('num_measurements', 10)
+        try:
+            num_measurements = int(num_measurements)
+        except ValueError:
+            return Response({"error": "num_measurements must be an integer"}, status=status.HTTP_400_BAD_REQUEST)
+
+        measurements = instance.get_last_measurements(num_measurements)
         measurement_serializer = MeasurementSerializer(measurements, many=True)
-        data['last_10_measurements'] = measurement_serializer.data
+        data['last_measurements'] = measurement_serializer.data
 
         return Response(data)
     

@@ -12,6 +12,12 @@ class HydroponicSystem(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def get_last_measurements(self, num_measurements=10):
+        """
+        Return the last num_measurements measurements for this hydroponic system.
+        """
+        return self.measurements.order_by('-created_at')[:num_measurements]
+
     def __str__(self):
         return self.label or self.name
 
